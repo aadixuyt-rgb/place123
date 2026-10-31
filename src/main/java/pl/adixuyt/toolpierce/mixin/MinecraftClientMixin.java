@@ -30,8 +30,6 @@ public abstract class MinecraftClientMixin {
 
         ClientPlayerEntity player = client.player;
         if (player == null || client.world == null) return;
-        if (player.getMainHandStack().isOf(Items.BLAZE_ROD)
-                && player.getOffHandStack().isOf(Items.COBWEB)) return;
         if (!PierceRules.isPlaceThrough(player.getMainHandStack())
                 && !PierceRules.isPlaceThrough(player.getOffHandStack())) return;
 
