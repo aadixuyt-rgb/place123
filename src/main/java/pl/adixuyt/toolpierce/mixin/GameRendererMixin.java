@@ -49,9 +49,9 @@ public abstract class GameRendererMixin {
         boolean hasBlock = hit.getType() == HitResult.Type.BLOCK
                 && hit.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
 
-        if (rule.mode() == PierceRules.Mode.PIERCE_TO) {
+        if (rule.mode() == PierceRules.Mode.PLAYER_ONLY) {
             // Keep a non-player entity target (e.g. shearing a sheep, hitting a mob with the axe).
-            // A player blocking the view is treated as transparent: dig/target the block behind them instead.
+            // A player blocking the view is treated as transparent: dig/target whatever block is behind them.
             if (vanilla instanceof EntityHitResult eh && !(eh.getEntity() instanceof PlayerEntity)) return;
             if (!hasBlock) return;
             client.crosshairTarget = hit;

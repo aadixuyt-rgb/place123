@@ -5,7 +5,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.ItemTags;
 
 import java.util.function.Predicate;
@@ -16,23 +15,22 @@ public final class PierceRules {
 
     /** How the ray behaves for the held item. */
     public enum Mode {
-        /** Skip every block except the target blocks; used only if a target is found in reach. */
-        PIERCE_TO,
         /** Skip only the listed blocks as if they had no hitbox. */
-        IGNORE
+        IGNORE,
+        /** Normal block raycast (no block is skipped); only a player blocking the view is transparent. */
+        PLAYER_ONLY
     }
 
     public record Rule(Mode mode, Predicate<BlockState> blocks) {
         /** Predicate telling the raycast which blocks to skip. */
         public Predicate<BlockState> skip() {
-            return mode == Mode.PIERCE_TO ? blocks.negate() : blocks;
+            return mode == Mode.IGNORE ? blocks : s -> false;
         }
     }
 
-    private static final Rule SHEARS = new Rule(Mode.PIERCE_TO,
-            s -> s.isIn(BlockTags.WOOL) || s.isOf(Blocks.COBWEB));
+    private static final Rule SHEARS = new Rule(Mode.PLAYER_ONLY, s -> false);
     private static final Rule BANNER_IGNORE = new Rule(Mode.IGNORE, PierceRules::isBanner);
-    private static final Rule AXE = new Rule(Mode.PIERCE_TO, PierceRules::isBanner);
+    private static final Rule AXE = new Rule(Mode.PLAYER_ONLY, s -> false);
 
     private static boolean isBanner(BlockState s) {
         return s.getBlock() instanceof AbstractBannerBlock;
