@@ -3,6 +3,7 @@ package pl.adixuyt.toolpierce.mixin;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -16,35 +17,37 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pl.adixuyt.toolpierce.PierceRules;
 import pl.adixuyt.toolpierce.PierceUtil;
 
-/** Right click with banner / cobweb / wool: place through entities, banners and cobwebs. */
+/** Place block items through player hitboxes only. */
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin {
     @Unique private HitResult toolpierce$original;
     @Unique private boolean toolpierce$replaced;
 
     @Inject(method = "doItemUse", at = @At("HEAD"))
-    private void toolpierce$placeThrough(CallbackInfo ci) {
+    private void toolpierce$placeThroughPlayer(CallbackInfo ci) {
         MinecraftClient client = (MinecraftClient) (Object) this;
         toolpierce$replaced = false;
         toolpierce$original = null;
 
         ClientPlayerEntity player = client.player;
         if (player == null || client.world == null) return;
+
+        // Keep the offhand cobweb restriction when the main hand holds a blaze rod.
         if (player.getMainHandStack().isOf(Items.BLAZE_ROD)
                 && player.getOffHandStack().isOf(Items.COBWEB)) return;
+
         if (!PierceRules.isPlaceThrough(player.getMainHandStack())
                 && !PierceRules.isPlaceThrough(player.getOffHandStack())) return;
 
         HitResult target = client.crosshairTarget;
-        boolean blocked = target instanceof EntityHitResult
-                || (target instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK
-                    && PierceRules.isPlaceSkipped(client.world.getBlockState(b.getBlockPos())));
-        if (!blocked) return;
+        // Placement is allowed through player hitboxes only, never through banners or cobwebs.
+        if (!(target instanceof EntityHitResult entityHit)
+                || !(entityHit.getEntity() instanceof PlayerEntity)) return;
 
         Entity camera = client.getCameraEntity() != null ? client.getCameraEntity() : player;
         Vec3d start = camera.getCameraPosVec(1.0F);
         Vec3d end = start.add(camera.getRotationVec(1.0F).multiply(player.getBlockInteractionRange()));
-        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end, PierceRules::isPlaceSkipped);
+        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end, state -> false);
 
         if (hit.getType() == HitResult.Type.BLOCK) {
             toolpierce$original = target;

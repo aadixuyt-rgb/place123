@@ -2,7 +2,7 @@ package pl.adixuyt.toolpierce;
 
 import net.minecraft.block.AbstractBannerBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.tag.ItemTags;
@@ -54,13 +54,8 @@ public final class PierceRules {
         return BANNER_IGNORE;
     }
 
-    /** Items that can be placed through hitboxes (right click): banners, cobwebs, wool. */
+    /** Any block item can be placed through a player hitbox. */
     public static boolean isPlaceThrough(ItemStack stack) {
-        return stack.isOf(Items.COBWEB) || stack.isIn(ItemTags.WOOL) || stack.isIn(ItemTags.BANNERS);
-    }
-
-    /** Blocks whose hitbox is skipped when placing those items (thin decorative blocks). */
-    public static boolean isPlaceSkipped(BlockState s) {
-        return isBanner(s) || s.isOf(Blocks.COBWEB);
+        return !stack.isEmpty() && stack.getItem() instanceof BlockItem;
     }
 }
