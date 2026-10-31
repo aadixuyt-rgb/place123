@@ -22,7 +22,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pl.adixuyt.toolpierce.PierceRules;
 import pl.adixuyt.toolpierce.PierceUtil;
 
-
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
     @Shadow @Final MinecraftClient client;
@@ -50,8 +49,7 @@ public abstract class GameRendererMixin {
                 && hit.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
 
         if (rule.mode() == PierceRules.Mode.PLAYER_ONLY) {
-            // Keep a non-player entity target (e.g. shearing a sheep, hitting a mob with the axe).
-            // A player blocking the view is treated as transparent: dig/target whatever block is behind them.
+            // Keep non-player entities targetable; only a player in the way is transparent.
             if (vanilla instanceof EntityHitResult eh && !(eh.getEntity() instanceof PlayerEntity)) return;
             if (!hasBlock) return;
             client.crosshairTarget = hit;
@@ -59,10 +57,21 @@ public abstract class GameRendererMixin {
             return;
         }
 
-        // IGNORE: redo the vanilla block-vs-entity choice with the skipped blocks removed.
+        // Banners are transparent only when a player can actually be targeted behind them.
+        // Otherwise keep the banner as the block target so it can be mined normally.
+        Vec3d entityEnd = start.add(look.multiply(entityRange));
+        Box entityBox = camera.getBoundingBox().stretch(look.multiply(entityRange)).expand(1.0, 1.0, 1.0);
+        EntityHitResult visiblePlayer = ProjectileUtil.raycast(camera, start, entityEnd, entityBox,
+                e -> !e.isSpectator() && e.canHit(), entityRange * entityRange);
+        if (visiblePlayer == null || !(visiblePlayer.getEntity() instanceof PlayerEntity)) {
+            hit = PierceUtil.raycast(client.world, camera, start, end, state -> false);
+            hasBlock = hit.getType() == HitResult.Type.BLOCK
+                    && hit.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
+        }
+
+        // Recalculate vanilla entity-vs-block priority with only eligible banners removed.
         double entityMaxSq = entityRange * entityRange;
         if (hasBlock) entityMaxSq = Math.min(entityMaxSq, hit.getPos().squaredDistanceTo(start));
-        Vec3d entityEnd = start.add(look.multiply(entityRange));
         Box box = camera.getBoundingBox().stretch(look.multiply(entityRange)).expand(1.0, 1.0, 1.0);
         EntityHitResult entityHit = ProjectileUtil.raycast(camera, start, entityEnd, box,
                 e -> !e.isSpectator() && e.canHit(), entityMaxSq);
