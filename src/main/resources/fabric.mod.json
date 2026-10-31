@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "web_guard",
+  "version": "${version}",
+  "name": "Web Guard",
+  "description": "Modyfikacja celowania przez hitboxy: wybrane przedmioty ignorują sztandary, nożyce przebijają wełnę i pajęczyny, siekiery przebijają do sztandarów.",
+  "authors": ["Adixu_YT"],
+  "contributors": ["Magiccc (Firework Fixed, CC0-1.0)"],
+  "license": "MIT",
+  "environment": "client",
+  "mixins": ["web_guard.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.4",
+    "java": ">=21"
+  }
+}
