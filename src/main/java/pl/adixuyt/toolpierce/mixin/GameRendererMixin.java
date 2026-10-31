@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
@@ -49,8 +50,9 @@ public abstract class GameRendererMixin {
                 && hit.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
 
         if (rule.mode() == PierceRules.Mode.PIERCE_TO) {
-            // Keep an entity target (e.g. shearing a sheep); only pierce blocks.
-            if (vanilla instanceof EntityHitResult) return;
+            // Keep a non-player entity target (e.g. shearing a sheep, hitting a mob with the axe).
+            // A player blocking the view is treated as transparent: dig/target the block behind them instead.
+            if (vanilla instanceof EntityHitResult eh && !(eh.getEntity() instanceof PlayerEntity)) return;
             if (!hasBlock) return;
             client.crosshairTarget = hit;
             client.targetedEntity = null;

@@ -6,8 +6,8 @@ Mod kliencki Fabric, zawsze aktywny (bez klawisza i GUI).
 
 - **Zwykłe przedmioty:** wszystkie przedmioty poza wyjątkami poniżej ignorują hitboxy sztandarów podczas celowania.
 - **Wyjątki od ignorowania sztandarów:** pusta ręka, dowolna siekiera, pajęczyna, dowolny sztandar, elytra, fajerwerki, złote jabłko, zaklęte złote jabłko i Blaze Rod. Przy tych przedmiotach sztandary zachowują normalny hitbox.
-- **Nożyce:** przebijają inne bloki, aby kopać wełnę i pajęczyny; celowanie w encje, np. owce, pozostaje normalne.
-- **Siekiera:** przebija inne bloki, aby celować i kopać sztandary.
+- **Nożyce:** przebijają inne bloki, aby kopać wełnę i pajęczyny; celowanie w encje, np. owce, pozostaje normalne. Gracz stojący na linii celowania jest traktowany jako przezroczysty — jeśli za nim jest blok w zasięgu, nożyce kopią ten blok zamiast uderzać gracza (zwierzęta/moby nadal normalnie blokują celownik, więc strzyżenie owcy działa jak w wanilii).
+- **Siekiera:** przebija inne bloki, aby celować i kopać sztandary. Tak samo jak nożyce — gracz stojący na linii celowania jest przezroczysty, więc siekiera trafia/kopie blok (w tym sztandar) za nim zamiast uderzyć gracza; moby nadal są normalnym celem.
 
 ## Stawianie
 
