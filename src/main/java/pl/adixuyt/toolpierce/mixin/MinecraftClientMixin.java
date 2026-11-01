@@ -37,20 +37,19 @@ public abstract class MinecraftClientMixin {
                 && !PierceRules.isPlaceThrough(player.getOffHandStack())) return;
 
         HitResult target = client.crosshairTarget;
-        boolean placingCobweb = player.getMainHandStack().isOf(Items.COBWEB)
-                || player.getOffHandStack().isOf(Items.COBWEB);
         boolean blocked = target instanceof EntityHitResult
                 || (target instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK
-                    && PierceRules.isPlaceSkipped(client.world.getBlockState(b.getBlockPos()), !placingCobweb));
+                    && client.world.getBlockState(b.getBlockPos()).getBlock()
+                        instanceof net.minecraft.block.AbstractBannerBlock);
         if (!blocked) return;
 
         Entity camera = client.getCameraEntity() != null ? client.getCameraEntity() : player;
         Vec3d start = camera.getCameraPosVec(1.0F);
         Vec3d end = start.add(camera.getRotationVec(1.0F).multiply(player.getBlockInteractionRange()));
-        // A cobweb item must target an existing cobweb instead of passing through it.
-        // This lets the player place another cobweb against/on the existing web.
+        // Ignore entity hitboxes (including players) and banners only.
+        // Cobweb blocks remain solid raycast targets, so placement cannot pass through an existing web.
         BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end,
-                state -> PierceRules.isPlaceSkipped(state, !placingCobweb));
+                state -> state.getBlock() instanceof net.minecraft.block.AbstractBannerBlock);
 
         if (hit.getType() == HitResult.Type.BLOCK) {
             toolpierce$original = target;
