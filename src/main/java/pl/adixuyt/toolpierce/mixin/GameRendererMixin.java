@@ -1,5 +1,6 @@
 package pl.adixuyt.toolpierce.mixin;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -26,6 +27,8 @@ import pl.adixuyt.toolpierce.PierceRules;
 import pl.adixuyt.toolpierce.PierceUtil;
 import pl.adixuyt.toolpierce.ToolPierceClient;
 
+import java.util.function.Predicate;
+
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
     @Shadow @Final MinecraftClient client;
@@ -43,11 +46,13 @@ public abstract class GameRendererMixin {
 
         ItemStack mainHand = player.getMainHandStack();
         PierceRules.Rule rule = PierceRules.forStack(mainHand);
-        boolean cobwebBypass = PierceRules.bypassesCobweb(mainHand);
-        if (rule == null && !cobwebBypass) return;
-
+        // Cobweb hitbox is only skipped while hitting/mining - and only when a player or mob
+        // is standing in or behind the cobweb on this exact sightline. Shears (and an empty
+        // hand) never skip it.
+        boolean cobwebConditional = PierceRules.bypassesCobweb(mainHand);
+        boolean bannerConditional = rule != null && rule.mode() == PierceRules.Mode.IGNORE;
         boolean playerOnly = rule != null && rule.mode() == PierceRules.Mode.PLAYER_ONLY;
-        boolean bannerRule = rule != null && rule.mode() == PierceRules.Mode.IGNORE;
+        if (!cobwebConditional && !bannerConditional && !playerOnly) return;
 
         double blockRange = player.getBlockInteractionRange();
         double entityRange = player.getEntityInteractionRange();
@@ -57,32 +62,38 @@ public abstract class GameRendererMixin {
         Vec3d entityEnd = start.add(look.multiply(entityRange));
         Box entityBox = camera.getBoundingBox().stretch(look.multiply(entityRange)).expand(1.0, 1.0, 1.0);
 
-        // First pass: normal block raycast, except cobwebs are skipped outright whenever this
-        // item bypasses them (anything but an empty hand or shears).
-        BlockHitResult firstBlock = PierceUtil.raycast(client.world, camera, start, blockEnd,
-                state -> cobwebBypass && state.isOf(Blocks.COBWEB));
+        // True first block - nothing is skipped yet.
+        BlockHitResult firstBlock = PierceUtil.raycast(client.world, camera, start, blockEnd, state -> false);
         boolean hasBlock = firstBlock.getType() == HitResult.Type.BLOCK
                 && firstBlock.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
 
         BlockHitResult finalBlock = firstBlock;
         boolean finalHasBlock = hasBlock;
 
-        if (bannerRule && hasBlock && PierceRules.isBanner(client.world.getBlockState(firstBlock.getBlockPos()))) {
-            // A banner is only skipped if a player or mob is intersected at or behind its
-            // face on this exact sightline - otherwise it keeps its normal hitbox.
-            EntityHitResult behind = ProjectileUtil.raycast(camera, start, entityEnd, entityBox,
-                    e -> (e instanceof PlayerEntity || e instanceof MobEntity) && !e.isSpectator() && e.canHit(),
-                    entityRange * entityRange);
-            double bannerDistSq = firstBlock.getPos().squaredDistanceTo(start);
-            boolean entityAtOrBehindBanner = behind != null
-                    && behind.getPos().squaredDistanceTo(start) + 0.36 >= bannerDistSq
-                    && behind.getPos().squaredDistanceTo(start) <= entityRange * entityRange;
-            if (entityAtOrBehindBanner) {
-                BlockHitResult pierced = PierceUtil.raycast(client.world, camera, start, blockEnd,
-                        state -> (cobwebBypass && state.isOf(Blocks.COBWEB)) || PierceRules.isBanner(state));
-                finalBlock = pierced;
-                finalHasBlock = pierced.getType() == HitResult.Type.BLOCK
-                        && pierced.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
+        if (hasBlock) {
+            BlockState firstState = client.world.getBlockState(firstBlock.getBlockPos());
+            boolean isCobwebFirst = cobwebConditional && firstState.isOf(Blocks.COBWEB);
+            boolean isBannerFirst = bannerConditional && PierceRules.isBanner(firstState);
+
+            if (isCobwebFirst || isBannerFirst) {
+                // Pierce it only if a player or mob is intersected at or behind its face on
+                // this sightline - otherwise it keeps its normal hitbox.
+                EntityHitResult behind = ProjectileUtil.raycast(camera, start, entityEnd, entityBox,
+                        e -> (e instanceof PlayerEntity || e instanceof MobEntity) && !e.isSpectator() && e.canHit(),
+                        entityRange * entityRange);
+                double blockDistSq = firstBlock.getPos().squaredDistanceTo(start);
+                boolean entityAtOrBehind = behind != null
+                        && behind.getPos().squaredDistanceTo(start) + 0.36 >= blockDistSq
+                        && behind.getPos().squaredDistanceTo(start) <= entityRange * entityRange;
+                if (entityAtOrBehind) {
+                    Predicate<BlockState> skip = isCobwebFirst
+                            ? state -> state.isOf(Blocks.COBWEB)
+                            : PierceRules::isBanner;
+                    BlockHitResult pierced = PierceUtil.raycast(client.world, camera, start, blockEnd, skip);
+                    finalBlock = pierced;
+                    finalHasBlock = pierced.getType() == HitResult.Type.BLOCK
+                            && pierced.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
+                }
             }
         }
 
