@@ -4,7 +4,18 @@ Mod kliencki Fabric, zawsze aktywny (bez klawisza i GUI widocznego w ustawieniac
 
 ## Klawisz '=' (wyłącznik główny)
 
-Klawisz **`=`** włącza/wyłącza wszystko opisane w tym pliku **oprócz** blokady Web + Blaze Rod (patrz niżej), która działa zawsze. Ten klawisz jest odczytywany bezpośrednio z GLFW, a nie jako zwykły `KeyBinding` — nie pojawia się w Opcje → Sterowanie i nie da się go tam przebindować ani podejrzeć.
+Klawisz **`=`** jest przełącznikiem: za każdym wciśnięciem zamienia stan włączony/wyłączony (jest komunikat na czacie przy każdym przełączeniu). Ten klawisz jest odczytywany bezpośrednio z GLFW, a nie jako zwykły `KeyBinding` — nie pojawia się w Opcje → Sterowanie, nie da się go tam przebindować ani w ogóle zobaczyć.
+
+Po wciśnięciu `=` (stan "wyłączony") **wyłącza się całkowicie**:
+- omijanie hitboxu pajęczyny przy biciu/kopaniu,
+- omijanie hitboxu sztandaru przy biciu/kopaniu,
+- zachowanie nożyc/siekiery (pomijanie gracza na linii celowania) — wraca normalne, wanilijskie celowanie/bicie,
+- stawianie wełny/sztandaru/pajęczyny przez hitbox gracza/moba — wraca normalne stawianie (nie postawisz przez gracza/moba).
+
+**Działa cały czas, niezależnie od `=`** (nie da się tego wyłączyć):
+- blokada Web + Blaze Rod — nie postawisz pajęczyny z offhandu trzymając Blaze Rod w głównej ręce.
+
+Wciśnięcie `=` ponownie włącza wszystko z powrotem.
 
 ## Celowanie i kopanie
 
@@ -15,8 +26,7 @@ Klawisz **`=`** włącza/wyłącza wszystko opisane w tym pliku **oprócz** blok
 
 ## Stawianie
 
-- Wełnę, sztandary i pajęczyny można stawiać przez hitboxy graczy/mobów i sztandarów, zawsze (bez warunku "ktoś musi tam być").
-- **Pajęczyny przy stawianiu nic nie omijają inaczej niż zawsze:** stawianie przez hitbox innej pajęczyny nie działa — gdy stawiasz pajęczynę, zatrzymuje się ona na już postawionej pajęczynie i stawiasz ją przed nią, a nie za nią (np. jeśli masz już pajęczynę na nogach, nowa nie przeleci przez nią na inne miejsce).
+- Wełnę, sztandary i pajęczyny można stawiać tylko przez hitboxy graczy/mobów. Sztandar i pajęczyna są przy stawianiu zawsze pełnymi, normalnymi blokami — nic nie jest przez nie pomijane (stawiasz przed nimi, nie za nimi).
 - **Blokada Web + Blaze Rod:** jeśli w głównej ręce (main hand) trzymasz Blaze Rod, a w drugiej (off hand) pajęczynę, nie możesz postawić pajęczyny z offhandu. Ta blokada działa zawsze, niezależnie od klawisza `=`. Jeśli w main hand trzymasz inny przedmiot, stawianie działa normalnie.
 
 ## Pozostałe

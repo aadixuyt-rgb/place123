@@ -17,7 +17,7 @@ import pl.adixuyt.toolpierce.PierceRules;
 import pl.adixuyt.toolpierce.PierceUtil;
 import pl.adixuyt.toolpierce.ToolPierceClient;
 
-/** Right click with supported blocks: place through entity hitboxes, never through solid blocks. */
+/** Right click with wool/banner/cobweb: place through entity hitboxes only, never through solid blocks. */
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin {
     @Unique private HitResult toolpierce$original;
@@ -36,22 +36,16 @@ public abstract class MinecraftClientMixin {
         if (!PierceRules.isPlaceThrough(player.getMainHandStack())
                 && !PierceRules.isPlaceThrough(player.getOffHandStack())) return;
 
-        // Banners are always skipped as placement targets; cobwebs are skipped too, unless the
-        // item being placed is itself a cobweb - a cobweb must stop at an existing cobweb
-        // (e.g. one worn on the legs) instead of passing through it.
-        boolean skipCobwebs = !PierceRules.isPlacingCobweb(player.getMainHandStack(), player.getOffHandStack());
-
         HitResult target = client.crosshairTarget;
-        boolean blocked = target instanceof EntityHitResult
-                || (target instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK
-                    && PierceRules.isPlaceSkipped(client.world.getBlockState(b.getBlockPos()), skipCobwebs));
+        // Only entity hitboxes may be bypassed. Banners and cobwebs are solid placement targets.
+        boolean blocked = target instanceof EntityHitResult;
         if (!blocked) return;
 
         Entity camera = client.getCameraEntity() != null ? client.getCameraEntity() : player;
         Vec3d start = camera.getCameraPosVec(1.0F);
         Vec3d end = start.add(camera.getRotationVec(1.0F).multiply(player.getBlockInteractionRange()));
-        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end,
-                state -> PierceRules.isPlaceSkipped(state, skipCobwebs));
+        // Do not skip any blocks: the ray must stop at the first banner, cobweb, or other block.
+        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end, state -> false);
 
         if (hit.getType() == HitResult.Type.BLOCK) {
             toolpierce$original = target;

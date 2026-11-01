@@ -2,7 +2,6 @@ package pl.adixuyt.toolpierce;
 
 import net.minecraft.block.AbstractBannerBlock;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.tag.ItemTags;
@@ -67,20 +66,5 @@ public final class PierceRules {
     /** Items that can be placed through hitboxes (right click): banners, cobwebs, wool. */
     public static boolean isPlaceThrough(ItemStack stack) {
         return stack.isOf(Items.COBWEB) || stack.isIn(ItemTags.WOOL) || stack.isIn(ItemTags.BANNERS);
-    }
-
-    /** True when either hand holds a cobweb, i.e. the player is placing a cobweb. */
-    public static boolean isPlacingCobweb(ItemStack mainHand, ItemStack offHand) {
-        return mainHand.isOf(Items.COBWEB) || offHand.isOf(Items.COBWEB);
-    }
-
-    /**
-     * Blocks whose hitbox is skipped when placing through them (thin decorative blocks).
-     * Banners are always skipped. Cobwebs are only skipped when {@code skipCobwebs} is true,
-     * which must be false while placing a cobweb itself, so a cobweb never passes through an
-     * already-placed cobweb (e.g. one worn on the legs) - it stops there instead.
-     */
-    public static boolean isPlaceSkipped(BlockState s, boolean skipCobwebs) {
-        return isBanner(s) || (skipCobwebs && s.isOf(Blocks.COBWEB));
     }
 }
