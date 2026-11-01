@@ -3,7 +3,7 @@
   "id": "web_guard",
   "version": "${version}",
   "name": "Web Guard",
-  "description": "Modyfikacja celowania przez hitboxy: wybrane przedmioty ignorują sztandary; nożyce i siekiera pomijają hitbox gracza stojącego na linii celowania i kopią/celują w blok za nim.",
+  "description": "Modyfikacja celowania przez hitboxy: wszystkie przedmioty oprócz nożyc ignorują pajęczyny; wybrane przedmioty ignorują sztandary; nożyce i siekiera pomijają hitbox gracza stojącego na linii celowania i kopią/celują w to, co za nim.",
   "authors": ["Adixu_YT"],
   "contributors": ["Magiccc (Firework Fixed, CC0-1.0)"],
   "license": "MIT",

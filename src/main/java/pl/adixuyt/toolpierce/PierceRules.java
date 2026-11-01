@@ -32,7 +32,7 @@ public final class PierceRules {
     private static final Rule BANNER_IGNORE = new Rule(Mode.IGNORE, PierceRules::isBanner);
     private static final Rule AXE = new Rule(Mode.PLAYER_ONLY, s -> false);
 
-    private static boolean isBanner(BlockState s) {
+    public static boolean isBanner(BlockState s) {
         return s.getBlock() instanceof AbstractBannerBlock;
     }
 
@@ -54,12 +54,32 @@ public final class PierceRules {
         return BANNER_IGNORE;
     }
 
+    /**
+     * Cobweb hitboxes are ignored while aiming/mining for any held item except an empty hand
+     * or shears. Unlike the banner rule above, this has no other exceptions: it applies even to
+     * the normally-excluded items (cobweb, banner, elytra, firework rocket, golden apples, blaze
+     * rod) and to the axe.
+     */
+    public static boolean bypassesCobweb(ItemStack stack) {
+        return !stack.isEmpty() && !stack.isOf(Items.SHEARS);
+    }
+
     /** Items that can be placed through hitboxes (right click): banners, cobwebs, wool. */
     public static boolean isPlaceThrough(ItemStack stack) {
         return stack.isOf(Items.COBWEB) || stack.isIn(ItemTags.WOOL) || stack.isIn(ItemTags.BANNERS);
     }
 
-    /** Blocks whose hitbox is skipped when placing those items (thin decorative blocks). */
+    /** True when either hand holds a cobweb, i.e. the player is placing a cobweb. */
+    public static boolean isPlacingCobweb(ItemStack mainHand, ItemStack offHand) {
+        return mainHand.isOf(Items.COBWEB) || offHand.isOf(Items.COBWEB);
+    }
+
+    /**
+     * Blocks whose hitbox is skipped when placing through them (thin decorative blocks).
+     * Banners are always skipped. Cobwebs are only skipped when {@code skipCobwebs} is true,
+     * which must be false while placing a cobweb itself, so a cobweb never passes through an
+     * already-placed cobweb (e.g. one worn on the legs) - it stops there instead.
+     */
     public static boolean isPlaceSkipped(BlockState s, boolean skipCobwebs) {
         return isBanner(s) || (skipCobwebs && s.isOf(Blocks.COBWEB));
     }
