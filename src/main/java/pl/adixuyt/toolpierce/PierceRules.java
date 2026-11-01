@@ -60,7 +60,7 @@ public final class PierceRules {
     }
 
     /** Blocks whose hitbox is skipped when placing those items (thin decorative blocks). */
-    public static boolean isPlaceSkipped(BlockState s) {
-        return isBanner(s) || s.isOf(Blocks.COBWEB);
+    public static boolean isPlaceSkipped(BlockState s, boolean skipCobwebs) {
+        return isBanner(s) || (skipCobwebs && s.isOf(Blocks.COBWEB));
     }
 }
