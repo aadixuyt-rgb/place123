@@ -17,7 +17,7 @@ import pl.adixuyt.toolpierce.PierceRules;
 import pl.adixuyt.toolpierce.PierceUtil;
 import pl.adixuyt.toolpierce.ToolPierceClient;
 
-/** Right click with banner / cobweb / wool: place through entities, banners and cobwebs. */
+/** Right click with supported blocks: place through entity hitboxes, never through solid blocks. */
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin {
     @Unique private HitResult toolpierce$original;
@@ -37,19 +37,15 @@ public abstract class MinecraftClientMixin {
                 && !PierceRules.isPlaceThrough(player.getOffHandStack())) return;
 
         HitResult target = client.crosshairTarget;
-        boolean blocked = target instanceof EntityHitResult
-                || (target instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK
-                    && client.world.getBlockState(b.getBlockPos()).getBlock()
-                        instanceof net.minecraft.block.AbstractBannerBlock);
+        // Only entity hitboxes may be bypassed. Banners and cobwebs are solid placement targets.
+        boolean blocked = target instanceof EntityHitResult;
         if (!blocked) return;
 
         Entity camera = client.getCameraEntity() != null ? client.getCameraEntity() : player;
         Vec3d start = camera.getCameraPosVec(1.0F);
         Vec3d end = start.add(camera.getRotationVec(1.0F).multiply(player.getBlockInteractionRange()));
-        // Ignore entity hitboxes (including players) and banners only.
-        // Cobweb blocks remain solid raycast targets, so placement cannot pass through an existing web.
-        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end,
-                state -> state.getBlock() instanceof net.minecraft.block.AbstractBannerBlock);
+        // Do not skip any blocks: the ray must stop at the first banner, cobweb, or other block.
+        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end, state -> false);
 
         if (hit.getType() == HitResult.Type.BLOCK) {
             toolpierce$original = target;
