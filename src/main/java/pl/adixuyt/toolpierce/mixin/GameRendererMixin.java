@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.BlockHitResult;
@@ -57,8 +58,8 @@ public abstract class GameRendererMixin {
             return;
         }
 
-        // Find the first real block. A banner is skipped only if a player is actually
-        // intersected at or behind its face; otherwise the banner remains the target.
+        // Find the first real block. A banner is skipped only if a player or mob
+        // (passive animal or hostile mob) is intersected at or behind its face.
         BlockHitResult firstBlock = PierceUtil.raycast(client.world, camera, start, blockEnd, state -> false);
         boolean bannerIsFirstBlock = firstBlock.getType() == HitResult.Type.BLOCK
                 && client.world.getBlockState(firstBlock.getBlockPos()).getBlock()
@@ -66,7 +67,7 @@ public abstract class GameRendererMixin {
 
         if (!bannerIsFirstBlock) {
             // No banner is blocking the view; keep vanilla block targeting and only
-            // replace it with a player hit when vanilla has a valid player target.
+            // replace it with a valid player hit.
             if (vanilla instanceof EntityHitResult eh && eh.getEntity() instanceof PlayerEntity) {
                 client.crosshairTarget = eh;
                 client.targetedEntity = eh.getEntity();
@@ -76,19 +77,20 @@ public abstract class GameRendererMixin {
 
         Box entityBox = camera.getBoundingBox().stretch(look.multiply(entityRange)).expand(1.0, 1.0, 1.0);
         EntityHitResult entityHit = ProjectileUtil.raycast(camera, start, entityEnd, entityBox,
-                e -> e instanceof PlayerEntity && !e.isSpectator() && e.canHit(),
+                e -> (e instanceof PlayerEntity || e instanceof MobEntity)
+                        && !e.isSpectator() && e.canHit(),
                 entityRange * entityRange);
 
         double bannerDistance = firstBlock.getPos().squaredDistanceTo(start);
-        double playerDistance = entityHit == null ? Double.POSITIVE_INFINITY
+        double entityDistance = entityHit == null ? Double.POSITIVE_INFINITY
                 : entityHit.getPos().squaredDistanceTo(start);
-        // Small tolerance permits a player intersecting the banner's block volume,
-        // while a player standing in front of it does not cause the banner to be skipped.
-        boolean playerAtOrBehindBanner = entityHit != null
-                && playerDistance + 0.36 >= bannerDistance
-                && playerDistance <= entityRange * entityRange;
+        // Small tolerance permits an entity intersecting the banner's block volume,
+        // while an entity clearly standing in front does not cause the banner to be skipped.
+        boolean entityAtOrBehindBanner = entityHit != null
+                && entityDistance + 0.36 >= bannerDistance
+                && entityDistance <= entityRange * entityRange;
 
-        if (playerAtOrBehindBanner) {
+        if (entityAtOrBehindBanner) {
             client.crosshairTarget = entityHit;
             client.targetedEntity = entityHit.getEntity();
         } else {
