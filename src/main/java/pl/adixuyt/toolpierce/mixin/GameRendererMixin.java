@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pl.adixuyt.toolpierce.PierceRules;
 import pl.adixuyt.toolpierce.PierceUtil;
+import pl.adixuyt.toolpierce.ToolPierceClient;
 
 @Mixin(GameRenderer.class)
 public abstract class GameRendererMixin {
@@ -28,6 +29,8 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "updateCrosshairTarget", at = @At("RETURN"))
     private void toolpierce$adjustTarget(float tickDelta, CallbackInfo ci) {
+        if (!ToolPierceClient.areFeaturesEnabled()) return;
+
         ClientPlayerEntity player = client.player;
         Entity camera = client.getCameraEntity();
         if (player == null || camera == null || client.world == null || client.interactionManager == null) return;
@@ -63,7 +66,15 @@ public abstract class GameRendererMixin {
         Box entityBox = camera.getBoundingBox().stretch(look.multiply(entityRange)).expand(1.0, 1.0, 1.0);
         EntityHitResult visiblePlayer = ProjectileUtil.raycast(camera, start, entityEnd, entityBox,
                 e -> !e.isSpectator() && e.canHit(), entityRange * entityRange);
-        if (visiblePlayer == null || !(visiblePlayer.getEntity() instanceof PlayerEntity)) {
+        BlockHitResult firstBanner = PierceUtil.raycast(client.world, camera, start, end,
+                state -> !(state.getBlock() instanceof net.minecraft.block.AbstractBannerBlock));
+        boolean bannerInReach = firstBanner.getType() == HitResult.Type.BLOCK
+                && firstBanner.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
+        boolean playerBehindBanner = visiblePlayer != null
+                && visiblePlayer.getEntity() instanceof PlayerEntity
+                && (!bannerInReach || visiblePlayer.getPos().squaredDistanceTo(start)
+                    >= firstBanner.getPos().squaredDistanceTo(start) - 0.04);
+        if (!playerBehindBanner) {
             hit = PierceUtil.raycast(client.world, camera, start, end, state -> false);
             hasBlock = hit.getType() == HitResult.Type.BLOCK
                     && hit.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
