@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pl.adixuyt.toolpierce.PierceRules;
 import pl.adixuyt.toolpierce.PierceUtil;
+import pl.adixuyt.toolpierce.ToolPierceClient;
 
 /** Right click with banner / cobweb / wool: place through entities, banners and cobwebs. */
 @Mixin(MinecraftClient.class)
@@ -27,6 +28,8 @@ public abstract class MinecraftClientMixin {
         MinecraftClient client = (MinecraftClient) (Object) this;
         toolpierce$replaced = false;
         toolpierce$original = null;
+
+        if (!ToolPierceClient.areFeaturesEnabled()) return;
 
         ClientPlayerEntity player = client.player;
         if (player == null || client.world == null) return;
