@@ -41,35 +41,58 @@ public abstract class GameRendererMixin {
         HitResult vanilla = client.crosshairTarget;
         double blockRange = player.getBlockInteractionRange();
         double entityRange = player.getEntityInteractionRange();
-        double maxRange = Math.max(blockRange, entityRange);
 
         Vec3d start = camera.getCameraPosVec(tickDelta);
         Vec3d look = camera.getRotationVec(1.0F);
-        Vec3d end = start.add(look.multiply(maxRange));
+        Vec3d blockEnd = start.add(look.multiply(blockRange));
+        Vec3d entityEnd = start.add(look.multiply(entityRange));
 
-        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end, rule.skip());
-        boolean hasBlock = hit.getType() == HitResult.Type.BLOCK
-                && hit.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
-
+        // PLAYER_ONLY items retain normal block targeting and may only hit a player.
         if (rule.mode() == PierceRules.Mode.PLAYER_ONLY) {
             if (vanilla instanceof EntityHitResult eh && !(eh.getEntity() instanceof PlayerEntity)) return;
-            if (!hasBlock) return;
-            client.crosshairTarget = hit;
-            client.targetedEntity = null;
+            if (vanilla instanceof BlockHitResult bh && bh.getType() == HitResult.Type.BLOCK) {
+                client.crosshairTarget = bh;
+                client.targetedEntity = null;
+            }
             return;
         }
 
-        Vec3d entityEnd = start.add(look.multiply(entityRange));
-        Box box = camera.getBoundingBox().stretch(look.multiply(entityRange)).expand(1.0, 1.0, 1.0);
-        EntityHitResult entityHit = ProjectileUtil.raycast(camera, start, entityEnd, box,
-                e -> !e.isSpectator() && e.canHit(), entityRange * entityRange);
+        // Find the first real block. A banner is skipped only if a player is actually
+        // intersected at or behind its face; otherwise the banner remains the target.
+        BlockHitResult firstBlock = PierceUtil.raycast(client.world, camera, start, blockEnd, state -> false);
+        boolean bannerIsFirstBlock = firstBlock.getType() == HitResult.Type.BLOCK
+                && client.world.getBlockState(firstBlock.getBlockPos()).getBlock()
+                    instanceof net.minecraft.block.AbstractBannerBlock;
 
-        if (entityHit != null) {
+        if (!bannerIsFirstBlock) {
+            // No banner is blocking the view; keep vanilla block targeting and only
+            // replace it with a player hit when vanilla has a valid player target.
+            if (vanilla instanceof EntityHitResult eh && eh.getEntity() instanceof PlayerEntity) {
+                client.crosshairTarget = eh;
+                client.targetedEntity = eh.getEntity();
+            }
+            return;
+        }
+
+        Box entityBox = camera.getBoundingBox().stretch(look.multiply(entityRange)).expand(1.0, 1.0, 1.0);
+        EntityHitResult entityHit = ProjectileUtil.raycast(camera, start, entityEnd, entityBox,
+                e -> e instanceof PlayerEntity && !e.isSpectator() && e.canHit(),
+                entityRange * entityRange);
+
+        double bannerDistance = firstBlock.getPos().squaredDistanceTo(start);
+        double playerDistance = entityHit == null ? Double.POSITIVE_INFINITY
+                : entityHit.getPos().squaredDistanceTo(start);
+        // Small tolerance permits a player intersecting the banner's block volume,
+        // while a player standing in front of it does not cause the banner to be skipped.
+        boolean playerAtOrBehindBanner = entityHit != null
+                && playerDistance + 0.36 >= bannerDistance
+                && playerDistance <= entityRange * entityRange;
+
+        if (playerAtOrBehindBanner) {
             client.crosshairTarget = entityHit;
             client.targetedEntity = entityHit.getEntity();
         } else {
-            client.crosshairTarget = hasBlock ? hit : BlockHitResult.createMissed(end,
-                    Direction.getFacing(look.x, look.y, look.z), BlockPos.ofFloored(end));
+            client.crosshairTarget = firstBlock;
             client.targetedEntity = null;
         }
     }
