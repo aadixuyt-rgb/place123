@@ -45,7 +45,12 @@ public abstract class MinecraftClientMixin {
         Entity camera = client.getCameraEntity() != null ? client.getCameraEntity() : player;
         Vec3d start = camera.getCameraPosVec(1.0F);
         Vec3d end = start.add(camera.getRotationVec(1.0F).multiply(player.getBlockInteractionRange()));
-        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end, PierceRules::isPlaceSkipped);
+        // A cobweb item must target an existing cobweb instead of passing through it.
+        // This lets the player place another cobweb against/on the existing web.
+        boolean placingCobweb = player.getMainHandStack().isOf(Items.COBWEB)
+                || player.getOffHandStack().isOf(Items.COBWEB);
+        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end,
+                state -> PierceRules.isPlaceSkipped(state, !placingCobweb));
 
         if (hit.getType() == HitResult.Type.BLOCK) {
             toolpierce$original = target;
