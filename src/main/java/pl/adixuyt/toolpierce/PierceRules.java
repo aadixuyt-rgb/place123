@@ -2,6 +2,7 @@ package pl.adixuyt.toolpierce;
 
 import net.minecraft.block.AbstractBannerBlock;
 import net.minecraft.block.BlockState;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.tag.ItemTags;
@@ -31,7 +32,7 @@ public final class PierceRules {
     private static final Rule BANNER_IGNORE = new Rule(Mode.IGNORE, PierceRules::isBanner);
     private static final Rule AXE = new Rule(Mode.PLAYER_ONLY, s -> false);
 
-    public static boolean isBanner(BlockState s) {
+    private static boolean isBanner(BlockState s) {
         return s.getBlock() instanceof AbstractBannerBlock;
     }
 
@@ -53,18 +54,8 @@ public final class PierceRules {
         return BANNER_IGNORE;
     }
 
-    /**
-     * Cobweb hitboxes are ignored while aiming/mining for any held item except an empty hand
-     * or shears. Unlike the banner rule above, this has no other exceptions: it applies even to
-     * the normally-excluded items (cobweb, banner, elytra, firework rocket, golden apples, blaze
-     * rod) and to the axe.
-     */
-    public static boolean bypassesCobweb(ItemStack stack) {
-        return !stack.isEmpty() && !stack.isOf(Items.SHEARS);
-    }
-
-    /** Items that can be placed through hitboxes (right click): banners, cobwebs, wool. */
+    /** Any block item can be placed through a player hitbox, matching the supplied 1.0.0 jar. */
     public static boolean isPlaceThrough(ItemStack stack) {
-        return stack.isOf(Items.COBWEB) || stack.isIn(ItemTags.WOOL) || stack.isIn(ItemTags.BANNERS);
+        return !stack.isEmpty() && stack.getItem() instanceof BlockItem;
     }
 }
