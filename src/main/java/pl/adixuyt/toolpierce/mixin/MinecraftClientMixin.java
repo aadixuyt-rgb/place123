@@ -37,9 +37,11 @@ public abstract class MinecraftClientMixin {
                 && !PierceRules.isPlaceThrough(player.getOffHandStack())) return;
 
         HitResult target = client.crosshairTarget;
+        boolean placingCobweb = player.getMainHandStack().isOf(Items.COBWEB)
+                || player.getOffHandStack().isOf(Items.COBWEB);
         boolean blocked = target instanceof EntityHitResult
                 || (target instanceof BlockHitResult b && b.getType() == HitResult.Type.BLOCK
-                    && PierceRules.isPlaceSkipped(client.world.getBlockState(b.getBlockPos())));
+                    && PierceRules.isPlaceSkipped(client.world.getBlockState(b.getBlockPos()), !placingCobweb));
         if (!blocked) return;
 
         Entity camera = client.getCameraEntity() != null ? client.getCameraEntity() : player;
@@ -47,8 +49,6 @@ public abstract class MinecraftClientMixin {
         Vec3d end = start.add(camera.getRotationVec(1.0F).multiply(player.getBlockInteractionRange()));
         // A cobweb item must target an existing cobweb instead of passing through it.
         // This lets the player place another cobweb against/on the existing web.
-        boolean placingCobweb = player.getMainHandStack().isOf(Items.COBWEB)
-                || player.getOffHandStack().isOf(Items.COBWEB);
         BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end,
                 state -> PierceRules.isPlaceSkipped(state, !placingCobweb));
 
