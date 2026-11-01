@@ -21,7 +21,7 @@ public final class ToolPierceClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (client.getWindow() == null || !client.getWindow().isWindowFocused()) {
+            if (client.getWindow() == null || GLFW.glfwGetWindowAttrib(client.getWindow().getHandle(), GLFW.GLFW_FOCUSED) != GLFW.GLFW_TRUE) {
                 equalWasDown = false;
                 return;
             }
