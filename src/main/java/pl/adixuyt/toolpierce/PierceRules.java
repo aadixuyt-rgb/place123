@@ -46,7 +46,6 @@ public final class PierceRules {
         if (stack.isOf(Items.COBWEB)
                 || stack.isIn(ItemTags.BANNERS)
                 || stack.isOf(Items.ELYTRA)
-                || stack.isOf(Items.FIREWORK_ROCKET)
                 || stack.isOf(Items.GOLDEN_APPLE)
                 || stack.isOf(Items.ENCHANTED_GOLDEN_APPLE)
                 || stack.isOf(Items.BLAZE_ROD)) return null;
