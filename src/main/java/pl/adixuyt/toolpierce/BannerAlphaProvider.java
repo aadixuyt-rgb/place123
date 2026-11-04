@@ -1,18 +1,15 @@
 package pl.adixuyt.toolpierce;
 
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.util.Identifier;
 
 /**
- * Uses the translucent block atlas for banner canvases and scales each vertex alpha.
+ * Uses the banner-pattern atlas with a translucent entity layer and scales vertex alpha.
  * This provider is only passed to the banner block-entity renderer.
  */
 public final class BannerAlphaProvider implements VertexConsumerProvider {
-    private static final Identifier BLOCK_ATLAS =
-            Identifier.ofVanilla("textures/atlas/blocks.png");
-
     private final VertexConsumerProvider delegate;
     private final int opacity;
 
@@ -29,7 +26,9 @@ public final class BannerAlphaProvider implements VertexConsumerProvider {
 
     @Override
     public VertexConsumer getBuffer(RenderLayer ignoredLayer) {
-        VertexConsumer buffer = delegate.getBuffer(RenderLayer.getEntityTranslucent(BLOCK_ATLAS));
+        // Banner base and pattern UVs belong to the banner-pattern atlas, not the block atlas.
+        VertexConsumer buffer = delegate.getBuffer(RenderLayer.getEntityTranslucent(
+                TexturedRenderLayers.BANNER_PATTERNS_ATLAS_TEXTURE));
         return new AlphaConsumer(buffer, opacity);
     }
 
