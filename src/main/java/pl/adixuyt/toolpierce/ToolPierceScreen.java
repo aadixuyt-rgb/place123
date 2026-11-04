@@ -84,7 +84,8 @@ public final class ToolPierceScreen extends Screen {
         int right = left + PANEL_WIDTH;
         int bottom = top + PANEL_HEIGHT;
 
-        context.fill(left, top, right, bottom, 0xF014171D);
+        context.fill(0, 0, this.width, this.height, 0xFF20242B);
+        context.fill(left, top, right, bottom, 0xFF303640);
         context.fill(left, top, right, top + 2, 0xFF4BA3FF);
         context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("WEB GUARD"),
                 this.width / 2, top + 15, 0xFFFFFFFF);
