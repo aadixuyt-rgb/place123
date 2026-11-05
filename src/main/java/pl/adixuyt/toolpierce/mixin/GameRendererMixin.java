@@ -5,6 +5,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -56,7 +57,9 @@ public abstract class GameRendererMixin {
         if (hasBlock) entityMaxSq = Math.min(entityMaxSq, hit.getPos().squaredDistanceTo(start));
 
         EntityHitResult entityHit = ProjectileUtil.raycast(camera, start, entityEnd, entityBox,
-                e -> !e.isSpectator() && e.canHit(), entityMaxSq);
+                e -> !e.isSpectator() && e.canHit()
+                        && (rule.mode() != PierceRules.Mode.PLAYER_ONLY || !(e instanceof PlayerEntity)),
+                entityMaxSq);
 
         if (entityHit != null) {
             client.crosshairTarget = entityHit;
