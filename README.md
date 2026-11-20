@@ -9,7 +9,7 @@ Klawisz **`=`** jest przełącznikiem: za każdym wciśnięciem zamienia stan w�
 Po wciśnięciu `=` (stan "wyłączony") **wyłącza się całkowicie**:
 - omijanie hitboxu pajęczyny przy biciu/kopaniu,
 - omijanie hitboxu sztandaru przy biciu/kopaniu,
-- zachowanie nożyc/siekiery (pomijanie gracza na linii celowania) — wraca normalne, wanilijskie celowanie/bicie,
+- zachowanie nożyc i kilofów (pomijanie hitboxu gracza na linii celowania) — wraca normalne, wanilijskie celowanie/bicie,
 - stawianie wełny/sztandaru/pajęczyny przez hitbox gracza/moba — wraca normalne stawianie (nie postawisz przez gracza/moba).
 
 **Działa cały czas, niezależnie od `=`** (nie da się tego wyłączyć):
@@ -19,10 +19,10 @@ Wciśnięcie `=` ponownie włącza wszystko z powrotem.
 
 ## Celowanie i kopanie
 
-- **Pajęczyny:** wszystkie przedmioty oprócz pustej ręki i nożyc ignorują hitbox pajęczyny podczas bicia/kopania — ale **tylko wtedy, gdy na tej samej linii celowania, w pajęczynie albo za nią, stoi gracz lub mob**. Jeśli nikogo tam nie ma, pajęczyna ma normalny hitbox. To dotyczy tylko bicia/kopania — stawianie (patrz niżej) nic nie omija.
-- **Sztandary:** wszystkie przedmioty poza wyjątkami poniżej ignorują hitbox sztandaru podczas celowania — ale **tylko wtedy, gdy na tej samej linii celowania, na wysokości sztandaru albo dalej, stoi gracz lub mob (zwierzę/potwór)**. Jeśli nikogo tam nie ma, sztandar ma normalny hitbox.
-- **Wyjątki od ignorowania sztandarów:** pusta ręka, dowolna siekiera, pajęczyna, dowolny sztandar, elytra, fajerwerki, złote jabłko, zaklęte złote jabłko i Blaze Rod. Przy tych przedmiotach sztandary zawsze zachowują normalny hitbox (ale pajęczyny nadal są ignorowane zgodnie z regułą wyżej, poza nożycami).
-- **Nożyce i siekiera:** robią tylko jedno — pomijają hitbox gracza stojącego na linii celowania i kopią/celują w to, co faktycznie jest za nim. Zwierzęta/moby nadal normalnie blokują celownik, więc strzyżenie owcy nożycami i uderzenie moba siekierą działają jak w wanilii — to dotyczy tylko gracza. (Siekiera dodatkowo omija pajęczynę zgodnie z regułą wyżej, jeśli ktoś jest w niej/za nią; nożyce nigdy nie omijają pajęczyn.)
+- **Pajęczyny:** przedmioty inne niż pusta ręka, nożyce i dowolny kilof ignorują hitbox pajęczyny podczas bicia/kopania — ale **tylko wtedy, gdy na tej samej linii celowania, w pajęczynie albo za nią, stoi gracz lub mob**. Jeśli nikogo tam nie ma, pajęczyna ma normalny hitbox. To dotyczy tylko bicia/kopania — stawianie (patrz niżej) nic nie omija.
+- **Sztandary:** przedmioty inne niż pusta ręka, nożyce i dowolny kilof ignorują hitbox sztandaru podczas celowania — ale **tylko wtedy, gdy na tej samej linii celowania, na wysokości sztandaru albo dalej, stoi gracz lub mob (zwierzę/potwór)**. Jeśli nikogo tam nie ma, sztandar ma normalny hitbox.
+- **Wyjątki od ignorowania sztandarów:** pusta ręka, dowolny kilof, nożyce, pajęczyna, dowolny sztandar, elytra, fajerwerki, złote jabłko, zaklęte złote jabłko i Blaze Rod. Przy tych przedmiotach sztandary zawsze zachowują normalny hitbox.
+- **Nożyce i każdy kilof:** pomijają wyłącznie hitbox gracza stojącego na linii celowania i pozwalają celować/kopać w to, co jest za nim. Zwierzęta i inne moby nadal normalnie blokują celownik. Żaden rodzaj siekiery nie ma już tej funkcji.
 
 ## Stawianie
 
