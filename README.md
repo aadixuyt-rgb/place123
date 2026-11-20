@@ -9,6 +9,7 @@ Klawisz **`=`** jest przełącznikiem: za każdym wciśnięciem zamienia stan w�
 Po wciśnięciu `=` (stan "wyłączony") **wyłącza się całkowicie**:
 - omijanie hitboxu pajęczyny przy biciu/kopaniu,
 - zachowanie nożyc i kilofów (pomijanie hitboxu gracza na linii celowania) — wraca normalne, wanilijskie celowanie/bicie,
+- pomijanie hitboxów spadających bloków Pointed Dripstone,
 - stawianie wełny/sztandaru/pajęczyny przez hitbox gracza/moba — wraca normalne stawianie (nie postawisz przez gracza/moba).
 
 **Działa cały czas, niezależnie od `=`** (nie da się tego wyłączyć):
@@ -20,6 +21,7 @@ Wciśnięcie `=` ponownie włącza wszystko z powrotem.
 
 - **Pajęczyny:** przedmioty inne niż pusta ręka, nożyce i dowolny kilof ignorują hitbox pajęczyny podczas bicia/kopania — ale **tylko wtedy, gdy na tej samej linii celowania, w pajęczynie albo za nią, stoi gracz lub mob**. Jeśli nikogo tam nie ma, pajęczyna ma normalny hitbox. To dotyczy tylko bicia/kopania — stawianie (patrz niżej) nic nie omija.
 - **Sztandary:** zawsze mają normalny hitbox podczas celowania i kopania — żaden przedmiot, w tym siekiery, nie omija ich hitboxu.
+- **Spadający Pointed Dripstone:** jego hitbox jest pomijany podczas celowania **niezależnie od trzymanego przedmiotu**, więc można namierzyć blok lub encję znajdującą się za nim. Zwykłe, nieruchome stalaktyty nie są pomijane.
 - **Nożyce i każdy kilof:** pomijają wyłącznie hitbox gracza stojącego na linii celowania i pozwalają celować/kopać w to, co jest za nim. Zwierzęta i inne moby nadal normalnie blokują celownik. Żaden rodzaj siekiery nie ma tej funkcji.
 
 ## Stawianie
