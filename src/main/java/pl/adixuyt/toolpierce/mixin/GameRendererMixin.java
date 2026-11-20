@@ -4,8 +4,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -36,7 +38,6 @@ public abstract class GameRendererMixin {
         if (player == null || camera == null || client.world == null || client.interactionManager == null) return;
 
         PierceRules.Rule rule = PierceRules.forStack(player.getMainHandStack());
-        if (rule == null) return;
 
         double blockRange = player.getBlockInteractionRange();
         double entityRange = player.getEntityInteractionRange();
@@ -46,8 +47,10 @@ public abstract class GameRendererMixin {
         Vec3d look = camera.getRotationVec(1.0F);
         Vec3d end = start.add(look.multiply(maxRange));
 
-        // IGNORE rules skip eligible banners unconditionally; no entity needs to be behind them.
-        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end, rule.skip());
+        // Apply the selected block-piercing rule, if any. Falling pointed dripstone
+        // is filtered separately below and is ignored with every held item.
+        BlockHitResult hit = PierceUtil.raycast(client.world, camera, start, end,
+                rule == null ? state -> false : rule.skip());
         boolean hasBlock = hit.getType() == HitResult.Type.BLOCK
                 && hit.getPos().squaredDistanceTo(start) <= blockRange * blockRange;
 
@@ -58,7 +61,8 @@ public abstract class GameRendererMixin {
 
         EntityHitResult entityHit = ProjectileUtil.raycast(camera, start, entityEnd, entityBox,
                 e -> !e.isSpectator() && e.canHit()
-                        && (rule.mode() != PierceRules.Mode.PLAYER_ONLY || !(e instanceof PlayerEntity)),
+                        && !toolpierce$isFallingPointedDripstone(e)
+                        && (rule == null || rule.mode() != PierceRules.Mode.PLAYER_ONLY || !(e instanceof PlayerEntity)),
                 entityMaxSq);
 
         if (entityHit != null) {
@@ -69,5 +73,10 @@ public abstract class GameRendererMixin {
                     Direction.getFacing(look.x, look.y, look.z), BlockPos.ofFloored(end));
             client.targetedEntity = null;
         }
+    }
+
+    private static boolean toolpierce$isFallingPointedDripstone(Entity entity) {
+        return entity instanceof FallingBlockEntity falling
+                && falling.getBlockState().isOf(Blocks.POINTED_DRIPSTONE);
     }
 }
