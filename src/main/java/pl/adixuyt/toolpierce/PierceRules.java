@@ -29,8 +29,8 @@ public final class PierceRules {
     }
 
     private static final Rule SHEARS = new Rule(Mode.PLAYER_ONLY, s -> false);
+    private static final Rule PICKAXE = new Rule(Mode.PLAYER_ONLY, s -> false);
     private static final Rule BANNER_IGNORE = new Rule(Mode.IGNORE, PierceRules::isBanner);
-    private static final Rule AXE = new Rule(Mode.PLAYER_ONLY, s -> false);
 
     private static boolean isBanner(BlockState s) {
         return s.getBlock() instanceof AbstractBannerBlock;
@@ -39,7 +39,7 @@ public final class PierceRules {
     /** @return the rule for the held stack, or null if the item has none. */
     public static Rule forStack(ItemStack stack) {
         if (stack.isEmpty()) return null;
-        if (stack.isIn(ItemTags.AXES)) return AXE;
+        if (stack.isIn(ItemTags.PICKAXES)) return PICKAXE;
         if (stack.isOf(Items.SHEARS)) return SHEARS;
 
         // These items keep normal banner targeting. Every other held item ignores banners.
