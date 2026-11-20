@@ -1,6 +1,5 @@
 package pl.adixuyt.toolpierce;
 
-import net.minecraft.block.AbstractBannerBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
@@ -30,11 +29,6 @@ public final class PierceRules {
 
     private static final Rule SHEARS = new Rule(Mode.PLAYER_ONLY, s -> false);
     private static final Rule PICKAXE = new Rule(Mode.PLAYER_ONLY, s -> false);
-    private static final Rule BANNER_IGNORE = new Rule(Mode.IGNORE, PierceRules::isBanner);
-
-    private static boolean isBanner(BlockState s) {
-        return s.getBlock() instanceof AbstractBannerBlock;
-    }
 
     /** @return the rule for the held stack, or null if the item has none. */
     public static Rule forStack(ItemStack stack) {
@@ -42,15 +36,8 @@ public final class PierceRules {
         if (stack.isIn(ItemTags.PICKAXES)) return PICKAXE;
         if (stack.isOf(Items.SHEARS)) return SHEARS;
 
-        // These items keep normal banner targeting. Every other held item ignores banners.
-        if (stack.isOf(Items.COBWEB)
-                || stack.isIn(ItemTags.BANNERS)
-                || stack.isOf(Items.ELYTRA)
-                || stack.isOf(Items.GOLDEN_APPLE)
-                || stack.isOf(Items.ENCHANTED_GOLDEN_APPLE)
-                || stack.isOf(Items.BLAZE_ROD)) return null;
-
-        return BANNER_IGNORE;
+        // All other items use normal banner targeting; banners are never skipped.
+        return null;
     }
 
     /** Any block item can be placed through a player hitbox, matching the supplied 1.0.0 jar. */
