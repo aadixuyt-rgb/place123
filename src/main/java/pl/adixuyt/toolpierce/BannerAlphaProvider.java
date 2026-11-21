@@ -1,7 +1,7 @@
 package pl.adixuyt.toolpierce;
 
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.TexturedRenderLayers;
+import net.minecraft.client.render.BannerRenderLayers;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 
@@ -27,8 +27,7 @@ public final class BannerAlphaProvider implements VertexConsumerProvider {
     @Override
     public VertexConsumer getBuffer(RenderLayer ignoredLayer) {
         // Banner base and pattern UVs belong to the banner-pattern atlas, not the block atlas.
-        VertexConsumer buffer = delegate.getBuffer(RenderLayer.getEntityTranslucent(
-                TexturedRenderLayers.BANNER_PATTERNS_ATLAS_TEXTURE));
+        VertexConsumer buffer = delegate.getBuffer(BannerRenderLayers.translucentBanner());
         return new AlphaConsumer(buffer, opacity);
     }
 
