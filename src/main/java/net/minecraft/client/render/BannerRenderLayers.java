@@ -12,8 +12,6 @@ public final class BannerRenderLayers {
             VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
             VertexFormat.DrawMode.QUADS,
             256,
-            true,
-            true,
             RenderLayer.MultiPhaseParameters.builder()
                     .program(RenderPhase.ENTITY_TRANSLUCENT_PROGRAM)
                     .texture(new RenderPhase.Texture(TexturedRenderLayers.BANNER_PATTERNS_ATLAS_TEXTURE, TriState.DEFAULT, false))
